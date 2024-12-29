@@ -1,11 +1,9 @@
 using Microsoft.OpenApi.Models;
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers(); // Enable support for controllers and API endpoints
+builder.Services.AddControllers(); 
 
-// Configure Swagger/OpenAPI
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -27,7 +25,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Register BookRepository as a Singleton
 builder.Services.AddSingleton<BookRepository>();
 
 var app = builder.Build();
@@ -45,7 +42,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Enable CORS middleware
 app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthorization();

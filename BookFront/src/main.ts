@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import { BookFormComponent } from './app/components/book-form.component';
 import { BookListComponent } from './app/components/book-list.component';
 import { BookService } from './app/services/book.service';
@@ -48,24 +49,29 @@ export class App implements OnInit {
     });
   }
 
-  saveBook(bookData: Omit<Book, 'id'>) {
+  saveBook(book: Book) {
     if (this.editingBook) {
-      this.bookService.updateBook({ ...bookData, id: this.editingBook.id });
-      this.editingBook = undefined;
+      this.bookService.updateBook(book).subscribe(() => {
+        this.editingBook = undefined;
+      });
     } else {
-      this.bookService.addBook(bookData);
+      this.bookService.addBook(book).subscribe();
     }
   }
 
   editBook(book: Book) {
-    this.editingBook = book;
+    this.editingBook = { ...book };
   }
 
   deleteBook(id: number) {
     if (confirm('Are you sure you want to delete this book?')) {
-      this.bookService.deleteBook(id);
+      this.bookService.deleteBook(id).subscribe();
     }
   }
 }
 
-bootstrapApplication(App).catch(err => console.error(err));
+bootstrapApplication(App, {
+  providers: [
+    provideHttpClient()
+  ]
+}).catch(err => console.error(err));

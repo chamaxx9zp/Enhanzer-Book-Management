@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Book } from '../models/book';
+import { BookService } from '../services/book.service';
 
 @Component({
   selector: 'app-book-form',
@@ -15,7 +16,7 @@ import { Book } from '../models/book';
           id="id"
           name="id"
           [(ngModel)]="bookData.id"
-          [readonly]="book !== undefined"
+          readonly
           required
         />
       </div>
@@ -96,40 +97,57 @@ import { Book } from '../models/book';
     }
   `],
 })
-export class BookFormComponent implements OnChanges {
-  @Input() book?: Book; // Used for editing existing books
-  @Output() save = new EventEmitter<Book>(); // Emit full Book object including id
+export class BookFormComponent implements OnChanges, OnInit {
+  @Input() book?: Book;
+  @Output() save = new EventEmitter<Book>();
 
   bookData: Book = {
-    id: 0, // Default id for a new book
+    id: 0,
     title: '',
     author: '',
     isbn: '',
-    publicationDate: new Date().toISOString().split('T')[0], // Default to current date in YYYY-MM-DD
+    publicationDate: new Date().toISOString().split('T')[0],
   };
+
+  constructor(private bookService: BookService) {}
+
+  ngOnInit() {
+    if (!this.book) {
+      this.bookService.getNextId().subscribe(nextId => {
+        this.bookData.id = nextId;
+      });
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['book'] && changes['book'].currentValue) {
-      this.bookData = { ...this.book! }; // Copy book data for editing
+      this.bookData = { ...this.book! };
+    } else if (changes['book'] && !changes['book'].currentValue) {
+      this.bookService.getNextId().subscribe(nextId => {
+        this.bookData = {
+          id: nextId,
+          title: '',
+          author: '',
+          isbn: '',
+          publicationDate: new Date().toISOString().split('T')[0],
+        };
+      });
     }
   }
 
   onSubmit() {
-    // Log the submitted data to the console
-    console.log('Submitted Book Data:', this.bookData);
-
-    // Emit the bookData for saving
     this.save.emit(this.bookData);
 
-    // Reset the form if adding a new book
     if (!this.book) {
-      this.bookData = {
-        id: 0,
-        title: '',
-        author: '',
-        isbn: '',
-        publicationDate: new Date().toISOString().split('T')[0],
-      };
+      this.bookService.getNextId().subscribe(nextId => {
+        this.bookData = {
+          id: nextId,
+          title: '',
+          author: '',
+          isbn: '',
+          publicationDate: new Date().toISOString().split('T')[0],
+        };
+      });
     }
   }
 }
