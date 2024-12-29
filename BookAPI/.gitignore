@@ -1,0 +1,13 @@
+# Binaries
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Build results
+*.dll
+*.exe
